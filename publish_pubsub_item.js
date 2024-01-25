@@ -8,7 +8,7 @@ async function initClient(username, password, resource) {
     domain: "localhost", // DOMAIN
     username: username, // USERNAME
     password: password, // PASSWORD
-    resource: resource || "res"// RESOURCE
+    resource: resource || "res", // RESOURCE
   });
 
   // Error handling
@@ -30,9 +30,11 @@ async function initClient(username, password, resource) {
   return xmpp;
 }
 
-function create_pubsub_node(client, username, node) {
+function publish_pubsub_item(client, username, node) {
   // Create a pubsub node
   const nodeName = `/home/localhost/${username}/${node}`; // Arbitrary node name, Check https://www.process-one.net/blog/publish-subscribe-pattern-and-pubsub-in-ejabberd/
+  const jid = `${username}@localhost/res`;
+  console.log("jid: ", jid);
   // Create XML for creating a pubsub node
   const xmlCreateNode = xml(
     "iq",
@@ -44,8 +46,7 @@ function create_pubsub_node(client, username, node) {
     xml(
       "pubsub",
       { xmlns: "http://jabber.org/protocol/pubsub" },
-      xml("create", { node: nodeName }),
-      xml("configure")
+      xml("subscribe", { node: nodeName, jid: jid })
     )
   );
   return xmlCreateNode;
@@ -53,12 +54,12 @@ function create_pubsub_node(client, username, node) {
 
 async function main() {
   const username = "bob"; // USERNAME
-  const password = "Sapp" // PASSWORD
+  const password = "Sapp"; // PASSWORD
   const client = await initClient(username, password);
   const nodename = "test3";
-  const xmlCreateNode = create_pubsub_node(client, username, nodename);
+  const xmlCreateNode = publish_pubsub_item(client, username, nodename);
   console.log(xmlCreateNode.toString());
-  // await client.send(xmlCreateNode);
+  await client.send(xmlCreateNode);
 }
 
 main();
